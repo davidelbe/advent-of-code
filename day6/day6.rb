@@ -15,7 +15,7 @@ class Memory
     reallocate
     self.checksums = []
     self.steps = 0
-    reallocate_once until known_position?
+    reallocate
   end
 
   def reallocate_once
