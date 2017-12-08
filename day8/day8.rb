@@ -1,3 +1,5 @@
+require 'dentaku'
+
 # --- Day 8: I Heard You Like Registers ---
 class Register
   attr_accessor :input, :registers, :max_value
@@ -5,6 +7,10 @@ class Register
     self.input = input
     self.registers = {}
     self.max_value = 0
+  end
+
+  def calculator
+    @calculator ||= Dentaku::Calculator.new
   end
 
   def follow_instructions
@@ -15,7 +21,7 @@ class Register
   end
 
   def passes_condition?(line)
-    eval(
+    calculator.evaluate(
       line.condition[:comparison].gsub(
         line.condition[:key],
         read_register_value(line.condition[:key]).to_s

@@ -1,0 +1,13 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    dentaku (3.0.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  dentaku (= 3.0.0)
+
+BUNDLED WITH
+   1.16.0
