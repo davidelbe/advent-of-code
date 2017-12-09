@@ -15,10 +15,6 @@ class Stream
     stream.gsub!(/<([^>]{0,}>)/, replace_with)
   end
 
-  def group_count
-    stream.scan(/(\{)/).length
-  end
-
   def score
     accumulated_score = 0
     level = 0

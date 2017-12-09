@@ -12,18 +12,6 @@ class StreamTest < Minitest::Test
     assert_equal s.clean!, '{{}}'
   end
 
-  def test_group_count_with_ignored_chars
-    s = Stream.new('{{<!>},{<!>},{<!>},{<a>}}')
-    s.clean!
-    assert_equal 2, s.group_count
-  end
-
-  def test_group_count
-    s = Stream.new('{{<a>},{<a>},{<a>},{<a>}}')
-    s.clean!
-    assert_equal 5, s.group_count
-  end
-
   def test_scores
     input = ['{}', '{{{}}}', '{{},{}}', '{{{},{},{{}}}}', '{<a>,<a>,<a>,<a>}',
              '{{<ab>},{<ab>},{<ab>},{<ab>}}', '{{<!!>},{<!!>},{<!!>},{<!!>}}',
