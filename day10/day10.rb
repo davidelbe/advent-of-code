@@ -12,17 +12,14 @@ class Knot
     return false if number > list.size
     reverse_interval(number)
     move_forward(number)
-    increase_skip_size
+    self.skip_size += 1
   end
 
   def fold_string(string)
+    suffix_values = [17, 31, 73, 47, 23]
+    array = string.chars.collect { |n| ascii_value(n) }.concat(suffix_values)
     64.times do
-      string.chars.each do |number|
-        fold(ascii_value(number))
-      end
-      [17, 31, 73, 47, 23].each do |number|
-        fold(number)
-      end
+      fold_array(array)
     end
   end
 
@@ -32,14 +29,8 @@ class Knot
     end
   end
 
-  def increase_skip_size
-    self.skip_size += 1
-  end
-
   def move_forward(number)
-    (number + skip_size).times do
-      self.position = (position + 1) % list.size
-    end
+    self.position = (position + number + skip_size) % list.size
   end
 
   def reverse_interval(number)
@@ -57,19 +48,15 @@ class Knot
   end
 
   def dense_hash
-    l = list
     output = ''
-    while l.any?
-      output += format('%02x', bitwise_xor(l))
-      l.slice!(0, 16)
+    while list.any?
+      output += format('%02x', bitwise_xor(list))
+      list.slice!(0, 16)
     end
     output
   end
 
   def bitwise_xor(l)
-    l[0] ^ l[1] ^ l[2] ^ l[3] ^
-      l[4] ^ l[5] ^ l[6] ^ l[7] ^
-      l[8] ^ l[9] ^ l[10] ^ l[11] ^
-      l[12] ^ l[13] ^ l[14] ^ l[15]
+    l[0..15].inject(:^)
   end
 end
