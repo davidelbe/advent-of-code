@@ -31,6 +31,30 @@ class KnotTest < Minitest::Test
     knot = Knot.new((0..255).to_a)
     i = [147, 37, 249, 1, 31, 2, 226, 0, 161, 71, 254, 243, 183, 255, 30, 70]
     knot.fold_array(i)
-    assert_equal 37230, knot.checksum
+    assert_equal 37_230, knot.checksum
+  end
+
+  def test_dense_hash_aoc_2017
+    knot = Knot.new((0..255).to_a)
+    knot.fold_string('AoC 2017')
+    assert_equal '33efeb34ea91902bb2f59c9920caa6cd', knot.dense_hash
+  end
+
+  def test_dense_hash_123
+    knot = Knot.new((0..255).to_a)
+    knot.fold_string('1,2,3')
+    assert_equal '3efbe78a8d82f29979031a4aa0b16a9d', knot.dense_hash
+  end
+
+  def test_dense_hash_124
+    knot = Knot.new((0..255).to_a)
+    knot.fold_string('1,2,4')
+    assert_equal '63960835bcdc130f0b66d7ff4f6a5a8e', knot.dense_hash
+  end
+
+  def test_input_part_2
+    knot = Knot.new((0..255).to_a)
+    knot.fold_string('147,37,249,1,31,2,226,0,161,71,254,243,183,255,30,70')
+    assert_equal '70b856a24d586194331398c7fcfa0aaf', knot.dense_hash
   end
 end
