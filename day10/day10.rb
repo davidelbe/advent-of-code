@@ -48,15 +48,13 @@ class Knot
   end
 
   def dense_hash
-    output = ''
-    while list.any?
-      output += format('%02x', bitwise_xor(list))
-      list.slice!(0, 16)
-    end
-    output
+    list
+      .each_slice(16)
+      .collect { |s| format('%02x', bitwise_xor(s)) }
+      .join
   end
 
-  def bitwise_xor(l)
-    l[0..15].inject(:^)
+  def bitwise_xor(array)
+    array.inject(:^)
   end
 end
