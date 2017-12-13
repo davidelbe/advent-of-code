@@ -19,11 +19,11 @@ class ScannerTest < Minitest::Test
     scanner = Scanner.new(File.read('input.txt'))
     scanner.make_trip
     assert_equal 98, scanner.max_number
-    assert_equal 1, scanner.severity
+    assert_equal 2508, scanner.severity
   end
 
   def test_part_two
     scanner = Scanner.new(File.read('input.txt'))
-    assert_equal 1, scanner.optimal_delay
+    assert_equal 3_913_186, scanner.optimal_delay
   end
 end

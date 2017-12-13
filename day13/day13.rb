@@ -1,10 +1,11 @@
 class Scanner
-  attr_accessor :input, :severity, :delay
+  attr_accessor :input, :severity, :delay, :keys
 
   def initialize(input)
     self.input = input
     self.severity = 0
     self.delay = 0
+    self.keys = []
   end
 
   def make_trip
@@ -13,41 +14,32 @@ class Scanner
     end
   end
 
-  def make_trip_fail_fast
+  def working_delay?
     (0..max_number).each do |layer|
-     raise "Nooo" if scanner_position(layer).zero?
+      return false if scanner_position(layer).zero?
     end
     true
-  rescue
-    puts "#{delay} failed"
-    false
   end
 
   def max_number
-    input.scan(/(\d{1,}): \d{1,}\z/).flatten.first.to_i
+    @max_number ||= input.scan(/(\d{1,}): \d{1,}\z/).flatten.first.to_i
   end
 
   def scanner_position(layer)
-    down = true
-    position = 0
-    (delay + layer).times do
-      down ? position += 1 : position -= 1
-      down = false if position == depth(layer) - 1
-      down = true if position.zero?
-    end
-    position
+    return -1 if depth(layer) == 0
+    (layer + delay) % (2 * (depth(layer) - 1))
   end
 
   def depth(layer)
-    input.scan(/#{layer}{1}: (\d{1,})/).flatten.first.to_i
+    if keys[layer].nil?
+      keys[layer] = input.scan(/#{layer}{1}: (\d{1,})/).flatten.first.to_i
+    end
+    keys[layer]
   end
 
   def optimal_delay
-    self.delay = 30000
-    while !make_trip_fail_fast
-      self.delay += 1
-      puts "Trying with delay #{delay}"
-    end
+    self.delay = 0
+    self.delay += 1 until working_delay?
     delay
   end
 end
