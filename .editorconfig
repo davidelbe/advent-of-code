@@ -8,3 +8,8 @@ indent_style = space
 indent_size = 2
 curly_bracket_next_line = true
 indent_brace_style = K&R
+trim_trailing_whitespace = true
+
+[*.txt]
+insert_final_newline = false
+trim_trailing_whitespace = false
