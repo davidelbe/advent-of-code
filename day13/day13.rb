@@ -26,7 +26,7 @@ class Scanner
   end
 
   def scanner_position(layer)
-    return -1 if depth(layer) == 0
+    return -1 if depth(layer).zero?
     (layer + delay) % (2 * (depth(layer) - 1))
   end
 
