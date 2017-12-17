@@ -35,7 +35,6 @@ class Dance
     moves.each_with_index do |item, index|
       @out[index] = tmp[item]
     end
-    #puts "Before swaps: #{@out}"
     @swaps.each do |s|
       do_swap(s)
     end
@@ -83,7 +82,7 @@ class Dance
 
   def perform_n_times(n = 1)
     n = n % cycle_length if n > cycle_length
-    n.times do |i|
+    n.times do
       perform!
     end
   end
