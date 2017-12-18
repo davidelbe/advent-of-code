@@ -1,29 +1,37 @@
 # Duet
 class Duet
-  attr_accessor :input, :recovered_frequency
+  attr_accessor :input, :partner, :state, :sent
 
   def initialize(input)
     @registers = {}
-    @recovers = {}
+    @queue = []
     input.scan(/^[a-z]{3}\s(\w{1,})/).flatten.uniq.each do |r|
       @registers[r] = 0
-      @recovers[r] = 0
     end
     self.input = input.split("\n")
   end
 
+  def play_with(program, starting_value)
+    self.partner = program
+    self.sent = 0
+    @registers['p'] = starting_value
+    parse
+  end
+
   def parse
+    self.state = 'running'
     @position = 0
     send(
       input[@position][0, 3].to_sym,
       name_and_value(input[@position])
     ) while inside_registers?
+    self.state = 'waiting'
   end
 
   def snd(args)
-    @last_sound_played = args[1]
-    @last_sound_played_name = args[0]
-    @recovers[args[0]] = @last_sound_played
+    puts "sending #{read_value(args[0])} to partner"
+    self.sent += 1
+    partner.receive(read_value(args[0]))
     @position += 1
   end
 
@@ -47,11 +55,19 @@ class Duet
     @position += 1
   end
 
+  # Just store it for later processing
+  def receive(number)
+    puts "received number #{number}"
+    @queue << number
+  end
+
   def rcv(args)
-    return @position += 1 if read_value(args[0]).zero?
-    @registers[@last_sound_played_name] = @recovers[@last_sound_played_name]
-    self.recovered_frequency = @last_sound_played
-    @position = -1
+    return @position = -1 if state == 'waiting' && partner.state == 'waiting'
+    self.state = 'waiting'
+    return if @queue.empty?
+    self.state = 'running'
+    @registers[args[0]] = @queue.slice!(0)
+    @position += 1
   end
 
   def jgz(args)
