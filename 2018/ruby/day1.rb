@@ -1,8 +1,9 @@
+require 'set'
 # calculate frequency change
 class FrequencyChange
   attr_accessor :changes, :frequencies, :current_frequency
 
-  def initialize()
+  def initialize
     self.frequencies = [0]
   end
 
@@ -14,7 +15,7 @@ class FrequencyChange
 
   # Find the first repeating frequency
   def repeat(input)
-    self.frequencies = [0]
+    self.frequencies = Set.new [0]
     self.changes = input.split(' ').map(&:to_i)
     new_frequency = 0
     index = 0
