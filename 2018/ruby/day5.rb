@@ -31,7 +31,7 @@ class PolymerUnitRemover
   end
 
   def compare
-    input.downcase.chars.uniq.each do |char|
+    ('a'..'z').to_a.each do |char|
       count = Polymer.new(test_input(char)).react
       self.lowest_count = count if count < lowest_count
     end
@@ -39,6 +39,6 @@ class PolymerUnitRemover
   end
 
   def test_input(char)
-    input.chars.reject { |c| [char, char.upcase].include?(c) }.join
+    input.tr(char.upcase, '').tr(char, '')
   end
 end
