@@ -9,7 +9,7 @@ class PolymerTest < Minitest::Test
 
     polymer.react
 
-    assert_equal 'dabCBAcaDA', polymer.result.join
+    assert_equal 'dabCBAcaDA', polymer.result
     assert_equal 10, polymer.result.size
   end
 

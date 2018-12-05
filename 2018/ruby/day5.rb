@@ -2,19 +2,22 @@
 class Polymer
   attr_accessor :result
   def initialize(input)
-    self.result = input.chars
+    self.result = input
+  end
+
+  def reactions
+    %w[aA Aa bB Bb cC Cc dD Dd eE Ee fF Ff gG Gg
+       hH Hh iI Ii jJ Jj kK Kk lL Ll mM Mm nN Nn
+       oO Oo pP Pp qQ Qq rR Rr sS Ss tT Tt uU Uu
+       vV Vv wW Ww xX Xx yY Yy zZ Zz]
   end
 
   def react
-    changes = 0
-    result.each_with_index do |char, index|
-      next unless char.swapcase == result[index + 1]
+    count = result.size
+    reactions.map { |reaction| result.gsub!(reaction, '') }
+    return count if result.size == count
 
-      result.slice!(index, 2)
-      changes += 1
-    end
-    react if changes > 0
-    result.size
+    react
   end
 end
 
