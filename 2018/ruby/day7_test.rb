@@ -19,4 +19,11 @@ class AssemblyTest < Minitest::Test
 
     assert_equal a.solve, 'BHMOTUFLCPQKWINZVRXAJDSYEG'
   end
+
+  def test_part_two
+    a = Assembly.new(File.read('day7.txt'))
+
+    a.solve_with_workers(5, 60)
+    assert_equal 877, a.elapsed_seconds
+  end
 end
