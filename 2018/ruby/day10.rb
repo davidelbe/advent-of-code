@@ -1,5 +1,11 @@
+# A single point
 class Point
   attr_accessor :x, :y, :vx, :vy
+
+  def neighbours(all_positions)
+    positions = [[x - 1, y], [x + 1, y], [x - 1, y - 1], [x, y - 1], [x + 1, y - 1], [x - 1, y + 1], [x, y + 1], [x + 1, y + 1]]
+    positions.map { |position| all_positions.include?(position) }
+  end
 end
 
 @points = []
@@ -15,36 +21,34 @@ File.read('day10.txt').split("\n").each do |line|
   @points << p
 end
 
-def print_points(number)
-#  puts "\e[H\e[2J" # clear screen
-#  puts number
-  point_array = @points.map{ |p| [p.x, p.y]}
-    (0...256).each do |y|
-      l = (0...256).map {|x| point_array.include?([x, y]) ? '#' : '.' }.join
-      if l == '...............................................................................................................#.......#####....####...#####...#####...#....#..######..######...................................................................................'
-        puts "Part 2: #{number+1}"
-        puts "Part 1: ⬇"
-      end
-      puts l if l.include?('#')
-      Process.exit if l == '...............................................................................................................######..#....#...###.#..#.......#####...#....#..######..######...................................................................................'
-    end
+def print_points(_number)
+  point_array = @points.map { |p| [p.x, p.y] }
+  (0...200).each do |y|
+    l = (0...200).map { |x| point_array.include?([x, y]) ? '#' : '.' }.join
+    puts l if l.include?('#')
+  end
 end
 
-200_000.times do |iteration|
-#  puts iteration
-  all_positive = true
-    @points.each do |point|
-      point.x += point.vx
-      point.y += point.vy
-      if point.x < 0 || point.y < 0
-        all_positive = false
-      end
-    end
+def all_have_neighbours?
+  @points.map { |p| p.neighbours(@points.map { |p| [p.x, p.y] }).any? }.all?(true)
+end
 
-  if iteration > 10000 && iteration < 10500
-    print_points(iteration) if all_positive
+iteration = 0
+loop do
+  iteration += 1
+  all_positive = true
+
+  @points.each do |point|
+    point.x += point.vx
+    point.y += point.vy
+    all_positive = false if point.x < 0 || point.y < 0
   end
 
+  next unless all_positive
+  next unless all_have_neighbours?
+
+  puts 'Part 1: ⬇'
+  print_points(iteration)
+  puts "Part 2: #{iteration}"
+  break
 end
-
-
