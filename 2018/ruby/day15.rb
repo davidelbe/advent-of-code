@@ -1,15 +1,18 @@
 class Game
-  attr_accessor :grid, :rounds, :continue_game
-  def initialize
-    self.grid = Grid.new(game: self)
+  attr_accessor :grid, :rounds, :continue_game, :raise_on_death, :attack_power
+  def initialize(raise_on_death = false, attack_power = 3)
     self.rounds = 0
     self.continue_game = true
+    self.raise_on_death = raise_on_death
+    self.attack_power = attack_power
+    self.grid = Grid.new(game: self)
   end
 
   def run
     while continue_game
       grid.output
       grid.warriors.sort_by(&:read_order).each_with_index do |warrior, index|
+        raise if raise_on_death && warrior.dead? && warrior.type == 'E'
         next if warrior.dead?
 
         break end_game if warrior.targets.empty?
@@ -42,6 +45,7 @@ class Grid
   def initialize(game: nil)
     self.pixels = []
     self.warriors = []
+    self.game = game
     read_input
   end
 
@@ -63,6 +67,10 @@ class Grid
       print "\n" if p.x.zero?
       print p.sign
     end
+    print "\n"
+    puts "#{game.grid.warriors.map(&:hp).join(' ')}"
+    puts "#{game.grid.warriors.map(&:ap).join(' ')}"
+
   end
 end
 
@@ -74,7 +82,7 @@ class Warrior
     self.position = position
     self.type = type
     self.hp = 200
-    self.ap = 3
+    self.ap = (type == 'G' ? 3 : grid.game.attack_power || 3)
   end
 
   def read_order
@@ -276,14 +284,24 @@ class String
   end
 end
 
+# Part 1
 game = Game.new
 game.run
+sleep 5
 
-# 259210 - too high!
-# 218240 - too high!
-# 219024 - wrong
-# 191216 - maybe?
-
+# Part 2
+@attack_power = 4
+begin
+  game = Game.new(true, @attack_power)
+  game.attack_power = @attack_power
+  game.run
+rescue StandardError
+  puts 'One of the elves died!'
+  puts "Attacking power was #{@attack_power}"
+  @attack_power += 1
+  sleep 2
+  retry
+end
 
 # Tests
 require 'minitest/autorun'
