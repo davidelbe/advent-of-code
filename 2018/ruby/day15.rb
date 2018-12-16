@@ -11,8 +11,8 @@ class Game
   def run
     while continue_game
       grid.output
-      grid.warriors.sort_by(&:read_order).each_with_index do |warrior, index|
-        raise if raise_on_death && warrior.dead? && warrior.type == 'E'
+      grid.warriors.sort_by(&:read_order).each do |warrior|
+        raise if unwanted_outcome?(warrior)
         next if warrior.dead?
 
         break end_game if warrior.targets.empty?
@@ -24,19 +24,24 @@ class Game
     end
   end
 
+  # For some reason, they did not want the elves to die
+  def unwanted_outcome?(warrior)
+    raise_on_death && warrior.dead? && warrior.type == 'E'
+  end
+
   def end_game
     grid.output
     self.continue_game = false
-    print_part_one
+    print_result
   end
 
   def remaining_hp
     grid.warriors.select(&:alive?).sum(&:hp)
   end
 
-  def print_part_one
-    puts "---"
-    puts "Part 1:  #{rounds} rounds x #{remaining_hp} HP = #{rounds * remaining_hp}"
+  def print_result
+    puts '---'
+    puts "Answer:  #{rounds} rounds x #{remaining_hp} HP = #{rounds * remaining_hp}"
   end
 end
 
@@ -68,12 +73,10 @@ class Grid
       print p.sign
     end
     print "\n"
-    puts "#{game.grid.warriors.map(&:hp).join(' ')}"
-    puts "#{game.grid.warriors.map(&:ap).join(' ')}"
-
   end
 end
 
+# A fighting unit, either Goblin or Elf
 class Warrior
   attr_accessor :position, :type, :grid, :hp, :ap
 
@@ -101,43 +104,41 @@ class Warrior
     targets
       .map(&:pixels_in_range)
       .flatten
+      .uniq
       .select(&:open?)
   end
 
-  def print_distance_map
-    puts 'Distance map'
-    grid.pixels.each do |p|
-      print "\n" if p.x.zero?
-      print p.distance.nil? ? '?' : p.distance.to_s.chars.last
-    end
+  def pick_closest_target_square
+    target_squares
+      .select(&:open?)
+      .reject(&:inaccessible?)
+      .min_by { |t| [t.distance, t.y, t.x] }
   end
 
-  require 'pry'
   def move
-    #binding.pry if position == [10, 20]
-    return if can_attack?
-    return if target_squares.empty?
+    return if can_attack? || target_squares.empty?
 
     # Mark every open square in the grid with a distance from this warrior
     calculate_distance(pixel, 0)
 
     # Find closest target based on distance
-    target_square = target_squares
-                    .select(&:open?)
-                    .reject(&:inaccessible?)
-                    .min_by { |t| [t.distance, t.y, t.x] }
+    target_square = pick_closest_target_square
+    return if target_square.nil?
 
     # Mark distance to us from this square
-    return if target_square.nil?
     calculate_distance(target_square)
 
     # Step into the one that takes us closer
-    new_pixel = pixels_in_range
-                .select(&:open?)
-                .reject(&:inaccessible?)
-                .min_by { |p| [p.distance, p.y, p.x] }
+    new_pixel = pick_first_pixel_that_takes_us_closer
 
     self.position = new_pixel.position unless new_pixel.nil?
+  end
+
+  def pick_first_pixel_that_takes_us_closer
+    pixels_in_range
+      .select(&:open?)
+      .reject(&:inaccessible?)
+      .min_by { |p| [p.distance, p.y, p.x] }
   end
 
   def reset_distance(starting_point)
@@ -147,18 +148,28 @@ class Warrior
 
   def calculate_distance(starting_point, distance = 0)
     reset_distance(starting_point) if distance.zero?
-    pixels_to_check = grid.pixels.select { |p| p.distance == distance }
-    .map(&:adjacent).flatten.uniq.select{ |p| p.distance.nil? }
-    added = 0
-    pixels_to_check.compact.each do |px|
-      next unless px.distance.nil?
-      next if px.wall
+    pixels_to_check = all_pixels_just_outside(distance)
+    added = false
+    pixels_to_check.each do |px|
       next if px.warrior && px.warrior != self
 
       px.distance = distance + 1
-      added += 1
+      added = true
     end
-    calculate_distance(starting_point, distance + 1) if added > 0
+    calculate_distance(starting_point, distance + 1) if added
+  end
+
+  # Return all pixels around a previously calculated
+  # distance, so we can tag them with distance + 1
+  def all_pixels_just_outside(distance)
+    grid
+      .pixels
+      .select { |p| p.distance == distance }
+      .map(&:adjacent)
+      .flatten
+      .uniq
+      .select { |p| p.distance.nil? && !p.wall }
+      .compact
   end
 
   # See if any of our closest pixels contain an enemy
@@ -187,7 +198,7 @@ class Warrior
   end
 
   def pixels_in_range
-    [pixel.up, pixel.left, pixel.right, pixel.down]
+    pixel.adjacent
   end
 
   def alive?
@@ -263,7 +274,7 @@ class Pixel
 
   def sign
     return '#' if wall
-    return '.' if open?
+    return ' ' if open?
 
     warrior.type == 'G' ? 'G'.red : 'E'.yellow
   end
